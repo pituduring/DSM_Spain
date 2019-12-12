@@ -25,6 +25,7 @@ names(dat)
 ##Testing with covariates: files in the list must be un rds format
 lis<-readRDS("F:/Carto_Chap2/CLC/lisCLCmap_dummy_WGS84.rds")
 lis2<-readRDS("F:/Carto_Chap2/Topo/lisSlope.rds")
+s<-readRDS(paste0(lis))
 
 #Create regression matrix from an Empty data frame, soildata and list of covariates (rds).
 #All the data in the same CRS
@@ -32,8 +33,9 @@ d1 <- dat
 coordinates(d1) <- ~Latitude.x+Longitude.x
 proj4string(d1)<-crs('+proj=longlat +ellps=GRS80 +no_defs')
           #empty data frame
-          m <- readRDS(paste0( lis[1]))
-          m1 <- raster::as.data.frame(m[1,][-1,])
+          #m <- readRDS(paste0( lis[1]))
+          m<-s[[1]]#primera capa de la covariable rasterizada
+          m1 <- raster::as.data.frame(m[1,][-1,])#me da error "cannot open file"
           #m[[1]][1,][-1,] tampoco funciona
           m1$SOC <- numeric()
 #loop for extraction
