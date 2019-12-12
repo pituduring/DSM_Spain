@@ -1,0 +1,53 @@
+#Regression matrix
+
+gc()
+rm(list=ls())
+
+setwd("F:/Carto_Chap2/CLC/")
+
+library(sp)
+library(raster)
+library(rgdal)
+
+#SoilDataBase
+dat1=read.table("../Data/CARBOSOL_perfiles.csv", sep=';', header=T)
+dat2=read.table("../Data/CARBOSOL_horizons.csv", sep=';', header=T, dec=",") 
+dat <- merge(dat2,dat1,by='ID_prof',all=FALSE)
+
+saveRDS(dat, "../Data/CARBOSOL_tot.rds")
+dat <- readRDS("../Data/CARBOSOL_tot.rds")
+
+        #Para leerla cuando empiece de nuevo:
+        dat <- readRDS("D:/_Pitu/_Tesis2016/_Tesis_PD/Bases de datos/_3Spain/_BD/datasets/CARBOSOL_tot.rds")
+        dat <- readRDS("F:/Carto_Chap2/Data/CARBOSOL_tot.rds")
+names(dat)
+
+##Testing with covariates: files in the list must be un rds format
+lis<-readRDS("F:/Carto_Chap2/CLC/lisCLCmap_dummy_WGS84.rds")
+lis2<-readRDS("F:/Carto_Chap2/Topo/lisSlope.rds")
+
+#Create regression matrix from an Empty data frame, soildata and list of covariates (rds).
+#All the data in the same CRS
+d1 <- dat
+coordinates(d1) <- ~Latitude.x+Longitude.x
+proj4string(d1)<-crs('+proj=longlat +ellps=GRS80 +no_defs')
+          #empty data frame
+          m <- readRDS(paste0( lis[1]))
+          m1 <- raster::as.data.frame(m[1,][-1,])
+          #m[[1]][1,][-1,] tampoco funciona
+          m1$SOC <- numeric()
+#loop for extraction
+for(i in 1:length(lis)){
+  m <- readRDS(lis[i])
+  proj4string(m) <- CRS( "+proj=longlat +ellps=GRS80 +no_defs")
+  #para el caso de spdf
+  #ov <- over(d1, m)
+  #por si usan stack
+  ov <- extract(m, d1)
+  ov$x <-raster::as.data.frame(d1)$Latitude.x
+  ov$y <- raster::as.data.frame(d1)$Longitude.x
+  ov$SOC <- d1$TOC.... 
+  #ov <- ov[complete.cases(ov),]
+  m1 <- rbind(m1, ov)
+  print(i)
+}
